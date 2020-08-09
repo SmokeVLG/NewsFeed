@@ -2,16 +2,39 @@ package com.maxden.newsfeed
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_main.*
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
+import com.maxden.newsfeed.util.TAG_NEWS_WORK
+import com.maxden.newsfeed.workers.NewsCheckWorker
+import dagger.android.AndroidInjection
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasAndroidInjector
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), HasAndroidInjector {
+
+    private val newsCheckWorkRequest: WorkRequest =
+        PeriodicWorkRequestBuilder<NewsCheckWorker>(15, TimeUnit.MINUTES)
+            .addTag(TAG_NEWS_WORK)
+            .build()
+
+    @Inject
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
+    }
+
+    override fun androidInjector() = dispatchingAndroidInjector
+
+    override fun onPause() {
+        super.onPause()
+        WorkManager
+            .getInstance(applicationContext)
+            .enqueue(newsCheckWorkRequest)
     }
 }

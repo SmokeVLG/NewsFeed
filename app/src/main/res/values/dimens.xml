@@ -1,3 +1,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="base_margin">16dp</dimen>
+    <dimen name="size_image_article">88dp</dimen>
+    <dimen name="article_gutter">8dp</dimen>
 </resources>
